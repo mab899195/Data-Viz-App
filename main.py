@@ -3,9 +3,10 @@ import plotly.express as px
 import pandas as pd
 
 # Add a title
-st.title("Data Visualization App")
+st.title("Data Analytics App")
+st.subheader("Data visualization")
 
-st.sidebar.image(r"https://www.sixense-group.com/wp-content/themes/sixense/img/logo-2.png", width=280)  # Adjust the width as needed
+st.sidebar.image(r"Sixense_digital_logo.jpg", width=280)  # Adjust the width as needed
 
 # Add a subheader in the sidebar
 st.sidebar.subheader("Visualization Settings")
@@ -96,3 +97,81 @@ try:
 
 except Exception as e:
     st.error(f"Error: {e}")
+
+# Data overview function
+def data_overview():
+    if st.session_state.df is not None:  # Check if the DataFrame exists
+        
+        # Sidebar checkboxes for each section
+        st.sidebar.divider()
+        st.sidebar.subheader("Overview Settings")
+        show_head = st.sidebar.checkbox("Show the first rows of the dataset")
+        show_columns = st.sidebar.checkbox("Show the dataset columns")
+        show_summary = st.sidebar.checkbox("Show data summarization")
+        show_missing = st.sidebar.checkbox("Show missing values by column")
+        show_duplicates = st.sidebar.checkbox("Show duplicate rows")
+        show_correlation_matrix = st.sidebar.checkbox("Show correlation matrix")
+        show_correlation_heatmap = st.sidebar.checkbox("Show correlation heatmap")
+        
+        if show_head:
+            st.subheader("**Data Overview**")
+            st.write("The first rows of your dataset look like this:")
+            st.write(st.session_state.df.head())
+        
+        if show_columns:
+            st.write("The different columns of the dataset are:")
+            # Convert the column names to a DataFrame
+            columns_df = pd.DataFrame(st.session_state.df.columns)
+            # Rename the index to 'Column #' and the second column to 'Name'
+            columns_df.rename_axis('Column #', inplace=True)
+            columns_df.columns = ['Name']  # Rename the columns of the DataFrame
+            
+            st.write(columns_df)
+        
+        if show_summary:
+            st.write("**Data Summarization**")
+            st.write(st.session_state.df.describe())
+        
+        if show_missing:
+            # Calculate and display missing values
+            missing_values_per_column = st.session_state.df.isnull().sum()
+            st.write("**Missing Values by Column**")
+            st.write(missing_values_per_column)
+            
+            total_missing_values = missing_values_per_column.sum()
+            st.write(f"There are {total_missing_values} missing values in this dataset.")
+        
+        if show_duplicates:
+            # Check for and display duplicates
+            st.write("**Duplicate Rows**")
+            duplicate_rows = st.session_state.df[st.session_state.df.duplicated()]
+            if not duplicate_rows.empty:
+                st.write(f"There are {len(duplicate_rows)} duplicate rows in the dataset.")
+                st.write("The duplicate rows are:")
+                st.write(duplicate_rows)
+            else:
+                st.write("There are no duplicate rows in the dataset.")
+        
+        if show_correlation_matrix:
+            # Calculate and display correlations
+            st.write("**Correlation Matrix**")
+            correlation_matrix = st.session_state.df.corr()
+            st.write(correlation_matrix)
+        else:
+            correlation_matrix = None
+        
+        if show_correlation_heatmap and show_correlation_matrix:
+            # Visualize the correlation matrix using a heatmap
+            st.write("**Correlation Heatmap**")
+            if correlation_matrix is not None:
+                fig = px.imshow(correlation_matrix, text_auto=True, aspect="auto", color_continuous_scale='RdBu_r')
+                st.plotly_chart(fig)
+    
+    else:
+        st.write("No data available. Please upload a file to see the overview.")
+
+data_overview()
+
+
+
+
